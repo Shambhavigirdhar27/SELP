@@ -14,7 +14,7 @@ public class EquipmentModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "equipmentid")
-    private Long equipmentid;
+    private int equipmentid;
 
     @Column(name = "name")
     private String name;
@@ -39,11 +39,11 @@ public class EquipmentModel {
     @Column(name = "updatets", nullable = false)
     private Timestamp updatets;
 
-	public Long getEquipmentid() {
+	public int getEquipmentid() {
 		return equipmentid;
 	}
 
-	public void setEquipmentid(Long equipmentid) {
+	public void setEquipmentid(int equipmentid) {
 		this.equipmentid = equipmentid;
 	}
 

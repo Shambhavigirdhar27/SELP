@@ -3,6 +3,8 @@ package com.bits.selp.model;
 import java.sql.Timestamp;
 import javax.persistence.*;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 @Entity
 @Table(name = "users")
 public class UsersModel {
@@ -10,7 +12,7 @@ public class UsersModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "userid")
-    private Long userid;
+    private int userid;
 
     @Column(name = "username")
     private String username;
@@ -27,14 +29,15 @@ public class UsersModel {
     @Column(name = "role")
     private String role;
 
-    @Column(name = "createts")
+    @CreationTimestamp
+    @Column(name = "createts", nullable = false, updatable = false)
     private Timestamp createts;
 
-    public Long getUserid() {
+    public int getUserid() {
         return userid;
     }
 
-    public void setUserid(Long userid) {
+    public void setUserid(int userid) {
         this.userid = userid;
     }
 

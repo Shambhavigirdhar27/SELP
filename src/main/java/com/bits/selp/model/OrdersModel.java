@@ -5,6 +5,8 @@ import java.sql.Timestamp;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 @Entity
 @Table(name = "orders")
 public class OrdersModel {
@@ -12,7 +14,7 @@ public class OrdersModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "orderid")
-    private Long orderid;
+    private int orderid;
 
     @Column(name = "userid")
     private Integer userid;
@@ -35,14 +37,15 @@ public class OrdersModel {
     @Column(name = "quantity")
     private Integer quantity;
     
-    @Column(name = "createts")
+    @CreationTimestamp
+    @Column(name = "createts", nullable = false, updatable = false)
     private Timestamp createts;
 
-	public Long getOrderid() {
+	public int getOrderid() {
 		return orderid;
 	}
 
-	public void setOrderid(Long orderid) {
+	public void setOrderid(int orderid) {
 		this.orderid = orderid;
 	}
 
