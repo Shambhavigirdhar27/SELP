@@ -16,4 +16,6 @@ public interface UsersRepository extends JpaRepository<UsersModel, Integer> {
 	public List<UsersModel> getUserModelByRole(@Param(value = "role") String role);
 	
 	public UsersModel findByUserid(int userid);
+	
+	public UsersModel findByEmail(String email);
 }

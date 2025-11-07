@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,13 +18,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.RequestBody;
+
 import com.bits.selp.model.EquipmentModel;
 import com.bits.selp.service.EquipmentService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import utilities.ResponseConstants;
 
@@ -46,7 +51,16 @@ public class EquipmentController {
     @GetMapping("/list")
     @Operation(
     	summary = "Get all equipments",
-        description = "Fetch a list of all equipment available in the system."
+        description = "Fetch a list of all equipment available in the system.",
+        responses = {
+        	@ApiResponse(
+        		responseCode = "200",
+                description = "List of all equipment retrieved successfully.",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = EquipmentModel.class))
+        	),
+            @ApiResponse(responseCode = "500", description = "Server error while fetching equipment list.")
+    	}
     )
     public List<EquipmentModel> getEquipmentsList() {
     	logger.info("getEquipmentsList(): begin");
@@ -59,8 +73,6 @@ public class EquipmentController {
         return equipmentsList;
     }
     
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    
     /** 
      * Save new equipment details
      * 
@@ -68,33 +80,40 @@ public class EquipmentController {
      * @return
      */
     @PostMapping("/add")
-    public ResponseEntity<Map<String, String>> addNewEquipment(@RequestBody(required = true) String payload) {
-        Map<String, String> response = new HashMap<>();
-        try {
-        	System.out.println("PAYLOAD RECEIVED: " + payload);
-            if (payload == null || payload.trim().isEmpty()) {
-                response.put("status", "error");
-                response.put("message", "Empty request body");
-                return ResponseEntity.badRequest().body(response);
-            }
+    @Operation(
+    	summary = "Add new equipment",
+        description = "Save a new equipment record to the system.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        	description = "Equipment details to add",
+            required = true,
+            content = @Content(schema = @Schema(implementation = EquipmentModel.class))
+        ),
+        responses = {
+        	@ApiResponse(responseCode = "201", description = "Equipment added successfully."),
+            @ApiResponse(responseCode = "500", description = "Failed to add new equipment.")
+    	}
+    )
+    public ResponseEntity<Map<String, Object>> addNewEquipment(@RequestBody EquipmentModel equipmentModel) {
+        logger.info("addNewEquipment(): begin");
 
-            ObjectMapper mapper = new ObjectMapper();
-            EquipmentModel equipmentModel = mapper.readValue(payload, EquipmentModel.class);
+        Map<String, Object> response = new HashMap<>();
+        try {
 
             equipService.saveEquipmentDetails(equipmentModel);
 
             response.put("status", "success");
             response.put("message", "Equipment added successfully");
-            return ResponseEntity.ok(response);
+            response.put("equipment", equipmentModel);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (Exception e) {
+            logger.error("Error while adding new equipment.", e);
             response.put("status", "error");
-            response.put("message", e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            response.put("message", "Failed to add new equipment: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
-
 
     /** 
      * Delete Equipment
@@ -103,7 +122,18 @@ public class EquipmentController {
      * @return
      */
     @PostMapping("/delete")
-    @Operation(summary = "Delete equipment", description = "Deletes the selected equipment record by ID.")
+    @Operation(
+    	summary = "Delete equipment",
+        description = "Deletes the selected equipment record by its unique ID.",
+        parameters = {
+        	@Parameter(name = "equipmentid", description = "ID of the equipment to delete", required = true, example = "101")
+    	},
+        responses = {
+        	@ApiResponse(responseCode = "200", description = "Equipment deleted successfully."),
+            @ApiResponse(responseCode = "404", description = "Equipment not found."),
+            @ApiResponse(responseCode = "500", description = "Error while deleting equipment.")
+    	}
+    )
     public String deleteEquipment(@RequestParam(value = "equipmentid") int equipmentId) {
     	logger.info("deleteEquipment(): begin");
     	String response = "";
@@ -126,7 +156,18 @@ public class EquipmentController {
      * @return
      */
     @PostMapping("/edit")
-    @Operation(summary = "Edit equipment", description = "Update the selected equipment record.")
+    @Operation(
+    	summary = "Edit equipment details",
+        description = "Update details for an existing equipment record.",
+        parameters = {
+        	@Parameter(name = "equipmentid", description = "ID of the equipment to edit", required = true, example = "101")
+    	},
+        responses = {
+        	@ApiResponse(responseCode = "200", description = "Equipment updated successfully."),
+            @ApiResponse(responseCode = "404", description = "Equipment not found."),
+            @ApiResponse(responseCode = "500", description = "Error while updating equipment.")
+    	}
+    )
     public String editEquipment(@RequestParam(value = "equipmentid") int equipmentId, HttpServletRequest request) {
     	logger.info("editEquipment(): begin");
     	String response = "";
