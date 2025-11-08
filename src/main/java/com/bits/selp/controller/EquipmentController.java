@@ -161,33 +161,39 @@ public class EquipmentController {
      */
     @PostMapping("/edit")
     @Operation(
-    	summary = "Edit equipment details",
-        description = "Update details for an existing equipment record.",
-        parameters = {
-        	@Parameter(name = "equipmentid", description = "ID of the equipment to edit", required = true, example = "101")
-    	},
-        responses = {
-        	@ApiResponse(responseCode = "200", description = "Equipment updated successfully."),
-            @ApiResponse(responseCode = "404", description = "Equipment not found."),
-            @ApiResponse(responseCode = "500", description = "Error while updating equipment.")
-    	}
+        summary = "Edit equipment details",
+        description = "Update details for an existing equipment record."
     )
-    public String editEquipment(@RequestParam(value = "equipmentid") int equipmentId, HttpServletRequest request) {
-    	logger.info("editEquipment(): begin");
-    	String response = "";
-    	try {
-    		EquipmentModel equipmentModel = equipService.getEquipmentModelByEquipmentId(equipmentId);
-    		equipmentModel.setName(request.getParameter("equipmentName"));
-    		equipmentModel.setTotalquantity(Integer.parseInt(request.getParameter("totalQuantity")));
-    		equipmentModel.setCategory(request.getParameter("category"));
-    		equipmentModel.setCondition(request.getParameter("condition"));
-    		
-    		equipService.saveEquipmentDetails(equipmentModel);
-    		response = ResponseConstants.RESPONSE_SUCCESS;
-    	} catch (Exception e) {
-    		logger.error("Error updating Equipment details");
-    		response = ResponseConstants.RESPONSE_ERROR;
-    	}
-    	return response;
+    public ResponseEntity<Map<String, Object>> editEquipment(@RequestBody EquipmentModel equipmentRequest) {
+        logger.info("editEquipment(): begin");
+        Map<String, Object> response = new HashMap<>();
+        try {
+            EquipmentModel equipmentModel = equipService.getEquipmentModelByEquipmentId(equipmentRequest.getEquipmentid());
+            if (equipmentModel == null) {
+                response.put("status", "error");
+                response.put("message", "Equipment not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            // Update fields
+            equipmentModel.setName(equipmentRequest.getName());
+            equipmentModel.setCategory(equipmentRequest.getCategory());
+            equipmentModel.setCondition(equipmentRequest.getCondition());
+            equipmentModel.setTotalquantity(equipmentRequest.getTotalquantity());
+
+            equipService.saveEquipmentDetails(equipmentModel);
+
+            response.put("status", "success");
+            response.put("message", "Equipment updated successfully");
+            response.put("equipment", equipmentModel);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            logger.error("Error updating Equipment details", e);
+            response.put("status", "error");
+            response.put("message", "Failed to update equipment: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
+
 }
