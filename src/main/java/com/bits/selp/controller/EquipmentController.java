@@ -134,18 +134,22 @@ public class EquipmentController {
             @ApiResponse(responseCode = "500", description = "Error while deleting equipment.")
     	}
     )
-    public String deleteEquipment(@RequestParam(value = "equipmentid") int equipmentId) {
+    public ResponseEntity<Map<String, Object>> deleteEquipment(@RequestParam(value = "equipmentid") int equipmentId) {
     	logger.info("deleteEquipment(): begin");
-    	String response = "";
+    	Map<String, Object> response = new HashMap<>();
     	try {
     		EquipmentModel equipmentModel = equipService.getEquipmentModelByEquipmentId(equipmentId);
     		equipService.deleteEquipment(equipmentModel);
-    		response = ResponseConstants.RESPONSE_SUCCESS;
+    		response.put("status", "success");
+            response.put("message", "Equipment deleted successfully");
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
     	} catch(Exception e) {
     		logger.error("Exception while deleting equipment.", e);
-    		response = ResponseConstants.RESPONSE_ERROR;
+    		response.put("status", "error");
+            response.put("message", "Failed to delete equipment: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     	}
-		return response;
     }
     
     /** 
