@@ -12,9 +12,11 @@ import com.bits.selp.model.OrdersModel;
 @Repository
 public interface OrdersRepository extends JpaRepository<OrdersModel, Integer> {
 	
-	@Query("SELECT o FROM OrdersModel o where o.status = :status")
-	public List<OrdersModel> getOrdersListByStatus(@Param(value = "status") String status);
+	@Query("SELECT o FROM OrdersModel o")
+	public List<OrdersModel> getOrdersList();
 	
 	@Query("SELECT o FROM OrdersModel o where o.orderid = :orderid")
 	public OrdersModel getOrderModelByOrderId(@Param(value = "orderid") int orderid);
+
+	public List<OrdersModel> findByUserid(Integer userid);
 }

@@ -6,6 +6,8 @@ import java.sql.Timestamp;
 import javax.persistence.*;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 @Entity
 @Table(name = "orders")
@@ -40,6 +42,16 @@ public class OrdersModel {
     @CreationTimestamp
     @Column(name = "createts", nullable = false, updatable = false)
     private Timestamp createts;
+ 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JoinColumn(name = "userid", referencedColumnName = "userid", insertable = false, updatable = false)
+    private UsersModel userModel;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JoinColumn(name = "equipmentid", referencedColumnName = "equipmentid", insertable = false, updatable = false)
+    private EquipmentModel equipmentModel;
 
 	public int getOrderid() {
 		return orderid;
@@ -112,5 +124,21 @@ public class OrdersModel {
 	public void setCreatets(Timestamp createts) {
 		this.createts = createts;
 	}
-    
+
+	public UsersModel getUserModel() {
+		return userModel;
+	}
+
+	public void setUserModel(UsersModel userModel) {
+		this.userModel = userModel;
+	}
+
+	public EquipmentModel getEquipmentModel() {
+		return equipmentModel;
+	}
+
+	public void setEquipmentModel(EquipmentModel equipmentModel) {
+		this.equipmentModel = equipmentModel;
+	}
+	
 }

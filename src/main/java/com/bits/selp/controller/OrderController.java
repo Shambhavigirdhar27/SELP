@@ -12,8 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bits.selp.model.EquipmentModel;
@@ -74,11 +74,15 @@ public class OrderController {
 	        @ApiResponse(responseCode = "500", description = "Server error while fetching orders.")
 		}
 	)
-	public List<OrdersModel> getOrdersListByStatus(@RequestParam(value = "status") String status) {
+	public List<OrdersModel> getOrdersList(@RequestAttribute(value = "userid", required = false) Integer userid) {
 		logger.info("getOrdersListByStatus(): begin");
 	    List<OrdersModel> ordersList = new ArrayList<>();
 	    try {
-	    	ordersList = orderService.getOrdersListByStatus(status);
+	    	if (userid != null) {
+		    	ordersList = orderService.getOrdersListByUserId(userid);
+	    	} else {
+		    	ordersList = orderService.getOrdersList();
+	    	}
 	    } catch (Exception e) {
 	    	logger.error("Exception while fetching orders by status.", e);
 	    }
@@ -184,7 +188,7 @@ public class OrderController {
 	    logger.info("updateOrderStatus(): begin");
 	    Map<String, Object> response = new HashMap<>();
 	    try {
-	        int orderid = (int) requestBody.get("orderid");
+	        int orderid = Integer.valueOf((String) requestBody.get("orderid"));
 	        String status = (String) requestBody.get("status");
 
 	        OrdersModel orderModel = orderService.getOrderModelByOrderId(orderid);

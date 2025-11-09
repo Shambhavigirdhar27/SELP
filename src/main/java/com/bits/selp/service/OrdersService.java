@@ -14,8 +14,8 @@ public class OrdersService {
     @Autowired
     OrdersRepository ordersRepository;
     
-    public List<OrdersModel> getOrdersListByStatus(String status) {
-    	return ordersRepository.getOrdersListByStatus(status);
+    public List<OrdersModel> getOrdersList() {
+    	return ordersRepository.getOrdersList();
     }
     
     public OrdersModel getOrderModelByOrderId(int orderid) {
@@ -25,4 +25,9 @@ public class OrdersService {
     public void saveOrder(OrdersModel orderModel) {
     	ordersRepository.save(orderModel);
     }
+
+	public List<OrdersModel> getOrdersListByUserId(Integer userid) {
+		// TODO Auto-generated method stub
+		return ordersRepository.findByUserid(userid);
+	}
 }

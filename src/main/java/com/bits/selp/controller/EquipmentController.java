@@ -5,14 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,7 +29,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import utilities.ResponseConstants;
 
 @RestController
 @RequestMapping("/equipment")
@@ -159,16 +157,42 @@ public class EquipmentController {
      * @param request
      * @return
      */
-    @PostMapping("/edit")
+    @PostMapping("/edit/{equipmentid}")
     @Operation(
-        summary = "Edit equipment details",
-        description = "Update details for an existing equipment record."
+    	summary = "Edit equipment details",
+    	description = "Updates an existing equipment record in the system using its unique equipment ID.",
+    	parameters = {
+    		@io.swagger.v3.oas.annotations.Parameter(
+    			name = "equipmentid",
+    	        description = "Unique ID of the equipment to update",
+    	        required = true,
+    	        example = "101"
+    		)
+    	},
+    	requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+    		description = "Updated equipment details (name, category, condition, totalquantity)",
+    	    required = true
+    	),
+    	responses = {
+    		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+    			responseCode = "200",
+    	        description = "Equipment updated successfully"
+    		),
+    	    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    	    	responseCode = "404",
+    	        description = "Equipment not found"
+    	    ),
+    	    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    	    	responseCode = "500",
+    	        description = "Internal server error while updating equipment"
+    	    )
+    	}
     )
-    public ResponseEntity<Map<String, Object>> editEquipment(@RequestBody EquipmentModel equipmentRequest) {
+    public ResponseEntity<Map<String, Object>> editEquipment(@RequestBody EquipmentModel equipmentRequest, @PathVariable(value = "equipmentid") Integer equipmentid) {
         logger.info("editEquipment(): begin");
         Map<String, Object> response = new HashMap<>();
         try {
-            EquipmentModel equipmentModel = equipService.getEquipmentModelByEquipmentId(equipmentRequest.getEquipmentid());
+            EquipmentModel equipmentModel = equipService.getEquipmentModelByEquipmentId(equipmentid);
             if (equipmentModel == null) {
                 response.put("status", "error");
                 response.put("message", "Equipment not found");
@@ -194,6 +218,48 @@ public class EquipmentController {
             response.put("message", "Failed to update equipment: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+    }
+    
+    /** 
+     * 
+     * @param equipmentid
+     * @return
+     */
+    @Operation(
+    	summary = "Get equipment details by ID",
+    	description = "Fetches details of a specific equipment item using its unique equipment ID.",
+    	parameters = {
+    		@io.swagger.v3.oas.annotations.Parameter(
+    			name = "equipmentid",
+    	        description = "Unique ID of the equipment to fetch",
+    	        required = true,
+    	        example = "101"
+    		)
+    	},
+    	responses = {
+    		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+    			responseCode = "200",
+    	        description = "Equipment details fetched successfully"
+    		),
+    	    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    	    	responseCode = "404",
+    	        description = "Equipment not found"
+    	    ),
+    	    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+    	    	responseCode = "500",
+    	        description = "Internal server error while retrieving equipment"
+    	    )
+    	}
+    )
+    @GetMapping("/{equipmentid}")
+    public EquipmentModel getEquipmentByEquipmentId(@PathVariable(value = "equipmentid") Integer equipmentid) {
+    	try {
+    		EquipmentModel equipmentModel = equipService.getEquipmentModelByEquipmentId(equipmentid);
+        	return equipmentModel;
+    	} catch (Exception e) {
+    		logger.error("Error getting Equipment details", e);
+    		return null;
+    	}
     }
 
 }

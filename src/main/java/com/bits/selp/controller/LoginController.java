@@ -3,9 +3,6 @@ package com.bits.selp.controller;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -20,6 +17,8 @@ import com.bits.selp.dto.UserDto;
 import com.bits.selp.model.UsersModel;
 import com.bits.selp.service.UsersService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 @RequestMapping("/auth")
 public class LoginController {
@@ -27,9 +26,44 @@ public class LoginController {
 	@Autowired
 	UsersService userService;
 	
-	  @PostMapping("/login")
-	  public ResponseEntity<LoginResponse> login(@Validated @RequestBody LoginRequest req) {
-	    // Simulate verification: accept any non-empty password
+	/** 
+	  * User login endpoint
+	  * 
+	  * @param req LoginRequest containing email and password
+	  * @return LoginResponse with authentication token and user details
+	*/
+	
+	@PostMapping("/login")
+	@Operation(
+		summary = "Authenticate user login",
+		description = "Validates the user’s credentials (email and password) and returns an authentication token along with user details.",
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+			description = "User credentials for login (email and password)",
+		    required = true,
+		    content = @io.swagger.v3.oas.annotations.media.Content(
+		    	schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = LoginRequest.class)
+		    )
+		),
+		responses = {
+			@io.swagger.v3.oas.annotations.responses.ApiResponse(
+				responseCode = "200",
+		        description = "Login successful. Returns authentication token and user info.",
+		        content = @io.swagger.v3.oas.annotations.media.Content(
+		        	schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = LoginResponse.class)
+		        )
+			),
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		    	responseCode = "401",
+		        description = "Unauthorized – invalid or empty password"
+		    ),
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		    	responseCode = "500",
+		        description = "Internal server error during authentication"
+		    )
+		}
+	)
+	public ResponseEntity<LoginResponse> login(@Validated @RequestBody LoginRequest req) {
+		// Simulate verification: accept any non-empty password
 	    if (req.getPassword().isBlank()) {
 	      return ResponseEntity.status(401).build();
 	    }
@@ -41,5 +75,5 @@ public class LoginController {
 
 	    UserDto user = new UserDto(userModel.getUserid(), email, role, name);
 	    return ResponseEntity.ok(new LoginResponse(token, user));
-	  }
+	}
 }

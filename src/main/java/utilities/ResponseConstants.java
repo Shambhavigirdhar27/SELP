@@ -18,5 +18,4 @@ public class ResponseConstants {
     
     public static final String STATUS_PENDING_FOR_APPROVAL = "PAP";
     
-    
 }
